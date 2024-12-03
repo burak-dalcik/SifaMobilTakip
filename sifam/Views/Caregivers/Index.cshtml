@@ -1,0 +1,41 @@
+﻿@model IEnumerable<sifam.Models.Caregiver>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.User)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AssignedPatient)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UserId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AssignedPatient.PatientId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.CaregiverId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.CaregiverId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.CaregiverId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

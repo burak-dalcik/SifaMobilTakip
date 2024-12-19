@@ -3,25 +3,28 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Veritabaný baðlantýsý
 builder.Services.AddDbContext<sifam.Data.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// CORS Ayarlarý
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        builder => builder.AllowAnyOrigin()   
-                          .AllowAnyMethod()   
-                          .AllowAnyHeader()); 
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
 
-
+// Controller'larý ekleyin
 builder.Services.AddControllers();
+
+// Swagger Ayarlarý
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Þifa Mobil API", Version = "v1" });
 });
-
 
 var app = builder.Build();
 
@@ -34,8 +37,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+builder.Services.AddAutoMapper(typeof(Program));
+
+
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins"); 
-app.UseAuthorization();
+
+// CORS
+app.UseCors("AllowAllOrigins");
+
 app.MapControllers();
+
 app.Run();

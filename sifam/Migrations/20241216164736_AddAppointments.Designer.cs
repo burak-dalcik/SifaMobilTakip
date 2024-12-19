@@ -12,8 +12,8 @@ using sifam.Data;
 namespace sifam.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241126131748_AddCaregiverRequestTable")]
-    partial class AddCaregiverRequestTable
+    [Migration("20241216164736_AddAppointments")]
+    partial class AddAppointments
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,22 +25,49 @@ namespace sifam.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("sifam.Models.Appointment", b =>
+                {
+                    b.Property<int>("AppointmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AppointmentId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("sifam.Models.Caregiver", b =>
                 {
                     b.Property<int>("CaregiverId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("caregiver_id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CaregiverId"));
 
-                    b.Property<int>("AssignedPatientId")
-                        .HasColumnType("int")
-                        .HasColumnName("assigned_patient_id");
+                    b.Property<int?>("AssignedPatientId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     b.HasKey("CaregiverId");
 
@@ -76,15 +103,14 @@ namespace sifam.Migrations
 
                     b.HasIndex("CaregiverId");
 
-                    b.ToTable("CaregiverRequest");
+                    b.ToTable("CaregiverRequests");
                 });
 
             modelBuilder.Entity("sifam.Models.Doctor", b =>
                 {
                     b.Property<int>("DoctorId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("doctor_id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DoctorId"));
 
@@ -93,8 +119,7 @@ namespace sifam.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     b.HasKey("DoctorId");
 
@@ -107,14 +132,12 @@ namespace sifam.Migrations
                 {
                     b.Property<int>("FamilyMemberId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("family_member_id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FamilyMemberId"));
 
                     b.Property<int>("PatientId")
-                        .HasColumnType("int")
-                        .HasColumnName("patient_id");
+                        .HasColumnType("int");
 
                     b.Property<string>("Relationship")
                         .IsRequired()
@@ -122,8 +145,7 @@ namespace sifam.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     b.HasKey("FamilyMemberId");
 
@@ -160,37 +182,83 @@ namespace sifam.Migrations
                     b.ToTable("Medications", (string)null);
                 });
 
+            modelBuilder.Entity("sifam.Models.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MessageContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MessageId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("sifam.Models.MessageParticipant", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MessageId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MessageParticipants");
+                });
+
             modelBuilder.Entity("sifam.Models.Patient", b =>
                 {
                     b.Property<int>("PatientId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("patient_id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientId"));
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("address");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("BirthDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("birth_date");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Disease")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("disease");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TcNo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("tc_no");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     b.HasKey("PatientId");
 
@@ -327,8 +395,7 @@ namespace sifam.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
@@ -346,8 +413,7 @@ namespace sifam.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("phone_number");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -355,7 +421,26 @@ namespace sifam.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("sifam.Models.Appointment", b =>
+                {
+                    b.HasOne("sifam.Models.Doctor", "Doctor")
+                        .WithMany("Appointments")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sifam.Models.Patient", "Patient")
+                        .WithMany("Appointments")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("sifam.Models.Caregiver", b =>
@@ -363,8 +448,7 @@ namespace sifam.Migrations
                     b.HasOne("sifam.Models.Patient", "AssignedPatient")
                         .WithMany()
                         .HasForeignKey("AssignedPatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("sifam.Models.User", "User")
                         .WithMany()
@@ -380,7 +464,7 @@ namespace sifam.Migrations
             modelBuilder.Entity("sifam.Models.CaregiverRequest", b =>
                 {
                     b.HasOne("sifam.Models.Caregiver", "Caregiver")
-                        .WithMany()
+                        .WithMany("CaregiverRequests")
                         .HasForeignKey("CaregiverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -414,6 +498,25 @@ namespace sifam.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("sifam.Models.MessageParticipant", b =>
+                {
+                    b.HasOne("sifam.Models.Message", "Message")
+                        .WithMany("Participants")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sifam.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
 
                     b.Navigation("User");
                 });
@@ -468,6 +571,26 @@ namespace sifam.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("sifam.Models.Caregiver", b =>
+                {
+                    b.Navigation("CaregiverRequests");
+                });
+
+            modelBuilder.Entity("sifam.Models.Doctor", b =>
+                {
+                    b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("sifam.Models.Message", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("sifam.Models.Patient", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 #pragma warning restore 612, 618
         }

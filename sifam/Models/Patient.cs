@@ -10,6 +10,8 @@
         public string Address { get; set; }
 
         public User User { get; set; }
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
     }
 
 }

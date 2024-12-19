@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using sifam.Data;
 using sifam.Models;
+using sifam.DTOs;
+
 
 namespace sifam.Controllers
 {
@@ -42,42 +44,29 @@ namespace sifam.Controllers
             return Ok(doctor);  // JSON formatında dönüş yapar
         }
 
-        // POST: api/Doctors
         [HttpPost]
-        public async Task<IActionResult> CreateDoctor([FromBody] Doctor doctor)
+        public async Task<ActionResult<Doctor>> CreateDoctor([FromBody] DoctorCreateDto doctorDto)
         {
-            // Kullanıcıyı kontrol et
-            if (doctor.User == null || doctor.User.UserId == 0)
+            // Kullanıcı doğrulama
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == doctorDto.UserId);
+            if (!userExists)
             {
-                return BadRequest("Geçerli bir kullanıcı bilgisi gönderin.");
+                return BadRequest("Belirtilen kullanıcı bulunamadı.");
             }
 
-            // Kullanıcı veritabanında mevcut mu diye kontrol et
-            var user = await _context.Users.FindAsync(doctor.User.UserId);
-
-            if (user == null)
+            // Yeni doctor nesnesini oluştur
+            var doctor = new Doctor
             {
-                // Kullanıcı veritabanında mevcut değilse, yeni kullanıcı oluştur
-                user = new User
-                {
-                    Name = doctor.User.Name,
-                    Email = doctor.User.Email,
-                    Password = doctor.User.Password,
-                    Role = doctor.User.Role,
-                    PhoneNumber = doctor.User.PhoneNumber
-                };
+                UserId = doctorDto.UserId,
+                Specialization = doctorDto.Specialization
+            };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync(); // Yeni kullanıcıyı kaydediyoruz
-            }
-
-            // Doktoru oluştur
-            doctor.User = user;  // Mevcut kullanıcıyı ilişkilendiriyoruz
             _context.Doctors.Add(doctor);
-            await _context.SaveChangesAsync(); // Doktoru kaydediyoruz
+            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDoctor", new { id = doctor.DoctorId }, doctor);
+            return CreatedAtAction(nameof(GetDoctor), new { id = doctor.DoctorId }, doctor);
         }
+
 
 
 

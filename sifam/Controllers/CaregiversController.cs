@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using sifam.Data;
 using sifam.Models;
+using sifam.Validators;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -42,34 +43,38 @@ namespace sifam.Controllers
 
             if (caregiver == null)
             {
-                return NotFound();
+                return NotFound("Kayıt bulunamadı.");
             }
 
             return Ok(caregiver);
         }
 
-        // POST: api/Caregivers
         [HttpPost]
         public async Task<ActionResult<Caregiver>> CreateCaregiver([FromBody] Caregiver caregiver)
         {
-            if (caregiver == null || caregiver.UserId <= 0 || caregiver.AssignedPatientId <= 0)
+            var errors = CaregiverValidator.Validate(caregiver);
+            if (errors.Any())
             {
-                return BadRequest("UserId and AssignedPatientId are required.");
+                return BadRequest(string.Join(", ", errors)); // Hataları döndür
             }
 
-            // Validation: Check if UserId and AssignedPatientId exist
+            // Kullanıcı ve Hasta kontrolü
             var userExists = await _context.Users.AnyAsync(u => u.UserId == caregiver.UserId);
             var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == caregiver.AssignedPatientId);
 
-            if (!userExists || !patientExists)
+            if (!userExists)
             {
-                return BadRequest("User or Patient not found.");
+                return BadRequest("Belirtilen kullanıcı bulunamadı.");
+            }
+
+            if (!patientExists)
+            {
+                return BadRequest("Belirtilen hasta bulunamadı.");
             }
 
             _context.Caregivers.Add(caregiver);
             await _context.SaveChangesAsync();
 
-            // Return the created caregiver with its new ID
             return CreatedAtAction(nameof(GetCaregiver), new { id = caregiver.CaregiverId }, caregiver);
         }
 
@@ -80,15 +85,14 @@ namespace sifam.Controllers
         {
             if (id != caregiver.CaregiverId)
             {
-                return BadRequest("Caregiver ID mismatch.");
+                return BadRequest("Caregiver ID eşleşmiyor.");
             }
 
-            var userExists = await _context.Users.AnyAsync(u => u.UserId == caregiver.UserId);
             var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == caregiver.AssignedPatientId);
 
-            if (!userExists || !patientExists)
+            if (!patientExists)
             {
-                return BadRequest("User or Patient not found.");
+                return BadRequest("Bağlı Hasta bulunamadı.");
             }
 
             _context.Entry(caregiver).State = EntityState.Modified;
@@ -116,10 +120,12 @@ namespace sifam.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCaregiver(int id)
         {
-            var caregiver = await _context.Caregivers.FindAsync(id);
+            var caregiver = await _context.Caregivers
+                .FirstOrDefaultAsync(c => c.CaregiverId == id);
+
             if (caregiver == null)
             {
-                return NotFound();
+                return NotFound("Caregiver bulunamadı.");
             }
 
             _context.Caregivers.Remove(caregiver);

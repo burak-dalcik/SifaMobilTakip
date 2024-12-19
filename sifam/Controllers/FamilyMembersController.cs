@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sifam.Data;
+using sifam.DTOs;
 using sifam.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace sifam.Controllers
 {
@@ -39,63 +43,51 @@ namespace sifam.Controllers
 
             if (familyMember == null)
             {
-                return NotFound();
+                return NotFound("FamilyMember bulunamadı.");
             }
 
             return Ok(familyMember);
         }
 
         // POST: api/FamilyMembers
-        // POST: api/FamilyMembers
         [HttpPost]
-        public async Task<ActionResult<FamilyMember>> CreateFamilyMember([FromBody] FamilyMember familyMember)
+        public async Task<ActionResult<FamilyMember>> CreateFamilyMember([FromBody] FamilyMemberCreateDto familyMemberDto)
         {
-            if (!ModelState.IsValid)
+            // Kullanıcı ve Hasta kontrolü
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == familyMemberDto.UserId);
+            var patientExists = await _context.Patients.AnyAsync(p => p.PatientId == familyMemberDto.PatientId);
+
+            if (!userExists)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Belirtilen kullanıcı bulunamadı.");
             }
 
-            // Veritabanından User ve Patient kontrolü
-            var user = await _context.Users.FindAsync(familyMember.UserId);
-            if (user == null)
+            if (!patientExists)
             {
-                return NotFound("User not found.");
+                return BadRequest("Belirtilen hasta bulunamadı.");
             }
 
-            var patient = await _context.Patients.FindAsync(familyMember.PatientId);
-            if (patient == null)
+            // Yeni FamilyMember nesnesini oluştur
+            var familyMember = new FamilyMember
             {
-                return NotFound("Patient not found.");
-            }
+                UserId = familyMemberDto.UserId,
+                PatientId = familyMemberDto.PatientId,
+                Relationship = familyMemberDto.Relationship
+            };
 
-            // User ve Patient nesnelerinin zaten var olduğuna emin olduktan sonra
-            // sadece ID'lerini kullanarak FamilyMember oluşturulmalı.
-
-            familyMember.User = user; // Referans olarak ilişkilendir
-            familyMember.Patient = patient; // Referans olarak ilişkilendir
-
-            // FamilyMember ekle
             _context.FamilyMembers.Add(familyMember);
             await _context.SaveChangesAsync();
 
-            // FamilyMember başarılı bir şekilde eklendikten sonra döndürülen sonucu belirtmek
             return CreatedAtAction(nameof(GetFamilyMember), new { id = familyMember.FamilyMemberId }, familyMember);
         }
 
-
-
         // PUT: api/FamilyMembers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateFamilyMember(int id, FamilyMember familyMember)
+        public async Task<IActionResult> UpdateFamilyMember(int id, [FromBody] FamilyMember familyMember)
         {
             if (id != familyMember.FamilyMemberId)
             {
-                return BadRequest("ID mismatch");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
+                return BadRequest("FamilyMember ID eşleşmiyor.");
             }
 
             _context.Entry(familyMember).State = EntityState.Modified;
@@ -108,7 +100,7 @@ namespace sifam.Controllers
             {
                 if (!FamilyMemberExists(id))
                 {
-                    return NotFound();
+                    return NotFound("FamilyMember bulunamadı.");
                 }
                 throw;
             }
@@ -124,7 +116,7 @@ namespace sifam.Controllers
 
             if (familyMember == null)
             {
-                return NotFound();
+                return NotFound("FamilyMember bulunamadı.");
             }
 
             _context.FamilyMembers.Remove(familyMember);

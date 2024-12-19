@@ -16,7 +16,6 @@ namespace sifam.Controllers
             _context = context;
         }
 
-        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {

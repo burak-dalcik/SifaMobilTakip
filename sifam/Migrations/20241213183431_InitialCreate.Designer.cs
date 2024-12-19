@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sifam.Data;
 
@@ -11,9 +12,11 @@ using sifam.Data;
 namespace sifam.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241213183431_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,36 +24,6 @@ namespace sifam.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("sifam.Models.Appointment", b =>
-                {
-                    b.Property<int>("AppointmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
-
-                    b.Property<DateTime>("AppointmentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PatientId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AppointmentId");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("PatientId");
-
-                    b.ToTable("Appointments");
-                });
 
             modelBuilder.Entity("sifam.Models.Caregiver", b =>
                 {
@@ -60,7 +33,7 @@ namespace sifam.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CaregiverId"));
 
-                    b.Property<int?>("AssignedPatientId")
+                    b.Property<int>("AssignedPatientId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -421,31 +394,13 @@ namespace sifam.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("sifam.Models.Appointment", b =>
-                {
-                    b.HasOne("sifam.Models.Doctor", "Doctor")
-                        .WithMany("Appointments")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("sifam.Models.Patient", "Patient")
-                        .WithMany("Appointments")
-                        .HasForeignKey("PatientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Patient");
-                });
-
             modelBuilder.Entity("sifam.Models.Caregiver", b =>
                 {
                     b.HasOne("sifam.Models.Patient", "AssignedPatient")
                         .WithMany()
                         .HasForeignKey("AssignedPatientId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("sifam.Models.User", "User")
                         .WithMany()
@@ -575,19 +530,9 @@ namespace sifam.Migrations
                     b.Navigation("CaregiverRequests");
                 });
 
-            modelBuilder.Entity("sifam.Models.Doctor", b =>
-                {
-                    b.Navigation("Appointments");
-                });
-
             modelBuilder.Entity("sifam.Models.Message", b =>
                 {
                     b.Navigation("Participants");
-                });
-
-            modelBuilder.Entity("sifam.Models.Patient", b =>
-                {
-                    b.Navigation("Appointments");
                 });
 #pragma warning restore 612, 618
         }

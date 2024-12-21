@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using sifam.AutoMapper; // AutoMapper MappingProfile'ý için namespace ekliyoruz
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
+
+// AutoMapper hizmetini ekle
+builder.Services.AddAutoMapper(typeof(MappingProfile)); // MappingProfile sýnýfýný AutoMapper'a ekliyoruz
 
 // Controller'larý ekleyin
 builder.Services.AddControllers();
@@ -36,9 +40,6 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Þifa Mobil API v1");
     });
 }
-
-builder.Services.AddAutoMapper(typeof(Program));
-
 
 app.UseHttpsRedirection();
 

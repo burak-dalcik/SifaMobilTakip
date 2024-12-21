@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using sifam.Data;
+using sifam.DTOs;
 using sifam.Models;
 
 namespace sifam.Controllers
@@ -15,11 +17,20 @@ namespace sifam.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public AppointmentController(ApplicationDbContext context)
+        public AppointmentsController(ApplicationDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+
+       /*  public AppointmentController(ApplicationDbContext context)
         {
             _context = context;
         }
+       */
 
         // GET: api/Appointment/Upcoming
         [HttpGet("Upcoming")]
@@ -51,17 +62,28 @@ namespace sifam.Controllers
 
         // POST: api/Appointment
         [HttpPost]
-        public async Task<ActionResult<Appointment>> CreateAppointment(Appointment appointment)
+        public async Task<IActionResult> PostAppointment(AppointmentDTO appointmentDto)
         {
-            if (appointment.AppointmentDate <= DateTime.Now)
+            // Check if the related Doctor and Patient exist
+            var doctor = await _context.Doctors.FindAsync(appointmentDto.DoctorId);
+            var patient = await _context.Patients.FindAsync(appointmentDto.PatientId);
+
+            if (doctor == null || patient == null)
             {
-                return BadRequest("Appointment date must be in the future.");
+                return BadRequest("Doctor or Patient not found");
             }
 
+            // Map DTO to Appointment Model
+            var appointment = _mapper.Map<Appointment>(appointmentDto);
+
+            // Add to database
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUpcomingAppointments), new { id = appointment.AppointmentId }, appointment);
+            // Return created response
+            return CreatedAtAction("GetAppointment", new { id = appointment.AppointmentId }, appointment);
         }
+
+
     }
 }

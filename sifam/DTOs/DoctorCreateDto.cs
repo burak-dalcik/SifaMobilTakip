@@ -1,8 +1,9 @@
 ﻿namespace sifam.DTOs
 {
-    public class DoctorCreateDto
+    public class DoctorDTO
     {
-        public int UserId { get; set; }
+        public int DoctorId { get; set; }
         public string Specialization { get; set; }
+        // Doctor ile ilişkili Appointment bilgilerini dışarıda bırakıyoruz.
     }
 }

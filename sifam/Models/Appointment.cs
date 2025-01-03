@@ -1,4 +1,6 @@
-﻿namespace sifam.Models
+﻿using sifam.Models;
+
+namespace sifam.Models
 {
     public class Appointment
     {
@@ -15,3 +17,4 @@
         public Patient Patient { get; set; }
     }
 }
+

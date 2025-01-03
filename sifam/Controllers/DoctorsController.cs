@@ -45,10 +45,10 @@ namespace sifam.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Doctor>> CreateDoctor([FromBody] DoctorCreateDto doctorDto)
+        public async Task<ActionResult<Doctor>> CreateDoctor([FromBody] DoctorDTO doctorDto)
         {
             // Kullanıcı doğrulama
-            var userExists = await _context.Users.AnyAsync(u => u.UserId == doctorDto.UserId);
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == doctorDto.DoctorId);
             if (!userExists)
             {
                 return BadRequest("Belirtilen kullanıcı bulunamadı.");
@@ -57,7 +57,7 @@ namespace sifam.Controllers
             // Yeni doctor nesnesini oluştur
             var doctor = new Doctor
             {
-                UserId = doctorDto.UserId,
+                UserId = doctorDto.DoctorId,
                 Specialization = doctorDto.Specialization
             };
 

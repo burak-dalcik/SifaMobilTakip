@@ -1,7 +1,8 @@
 ﻿namespace sifam.DTOs
 {
-    public class AppointmentDTO
+    public class AppointmentCreateDto
     {
+        public int AppointmentId { get; set; } // Bu ekleniyor, güncelleme işlemleri için
         public DateTime AppointmentDate { get; set; }
         public string Description { get; set; }
         public int DoctorId { get; set; }
